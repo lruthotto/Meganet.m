@@ -11,7 +11,6 @@ classdef convMCN < convKernel
     % 
     %      K - convolution matrix
     
-    
     properties
         pad
     end
@@ -77,9 +76,7 @@ classdef convMCN < convKernel
 
        function dY = ATmv(this,theta,Z)
             
-            nex    =  numel(Z)/prod(nImgOut(this));
-            Z      = reshape(Z,[nImgOut(this) nex]);
-            theta = reshape(this.Q*theta(:),this.sK);
+            theta = reshape(theta,this.sK);
 
             crop = this.pad;
             if this.stride==2 && this.sK(1)==3
@@ -91,7 +88,6 @@ classdef convMCN < convKernel
             if this.stride==2 && this.sK(1)==1
                 dY = padarray(dY,[1 1],0,'post');
             end
-            dY = reshape(dY,[],nex);
        end
     end
 end

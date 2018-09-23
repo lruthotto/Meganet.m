@@ -38,19 +38,19 @@ classdef batchNormLayer < abstractMeganetElement
         
         function [Ydata,Y,dA] = apply(this,theta,Y,varargin)
            
-           Y   = reshape(Y,this.nData(1)*this.nData(2), this.nData(3),[]); dA = [];
-           nex = size(Y,3);
+           dA = [];
+           nex = size(Y,4);
            % normalization
            
-           Y  = Y-mean(Y,3);
+           Y  = Y-mean(Y,4);
            
-           Y  = Y./sqrt(mean(Y.^2,3)+this.eps);
+           Y  = Y./sqrt(mean(Y.^2,4)+this.eps);
            
            % scaling
-           [s2,b2] = split(this,theta);           
-           Y = Y.*s2;
-           Y = Y + b2;
-           Y = reshape(Y,[],nex);
+%            [s2,b2] = split(this,theta);  
+           
+           Y = Y.*reshape(theta.weights{1},1,1,[]);
+           Y = Y + reshape(theta.weights{2},1,1,[]);
            Ydata = Y;
         end
         
@@ -60,11 +60,11 @@ classdef batchNormLayer < abstractMeganetElement
         end
         
         function n = nFeatIn(this)
-            n = prod(this.nData(1:3));
+            n = this.nData(1:3);
         end
         
         function n = nFeatOut(this)
-            n = prod(this.nData(1:3));
+            n = this.nData(1:3);
         end
        
         function n = nDataOut(this)
@@ -72,9 +72,10 @@ classdef batchNormLayer < abstractMeganetElement
         end
         
         function theta = initTheta(this)
-            [s2,b2] = split(this,ones(this.nTheta,1));
-            theta = [s2(:); 0*b2(:);];
-            theta = gpuVar(this.useGPU,this.precision,theta);
+            theta = cell(2,1);
+            theta{1} = ones(this.nData(3),1);
+            theta{2} = zeros(this.nData(3),1);
+            theta = MeganetWeights(theta);
         end
         
         

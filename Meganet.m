@@ -35,7 +35,7 @@ classdef Meganet < abstractMeganetElement
             
             nout = nFeatOut(blocks{1});
             for k=2:nb
-                if nFeatIn(blocks{k}) ~= nout
+                if any(nFeatIn(blocks{k}) ~= nout)
                     error('%s - dim of input features of layer %d does not match output features of layer %d',mfilename,k,k-1);
                 end
                 nout = nFeatOut(blocks{k});

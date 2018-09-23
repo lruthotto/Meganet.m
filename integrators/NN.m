@@ -119,15 +119,12 @@ classdef NN < abstractMeganetElement
             if nargout>1;    tmp = cell(nt,2); end
             Ydata = [];
             thetas = split(this,theta);
-            cnt = 0;
             for i=1:nt
-                ni = nTheta(this.layers{i});
                 if (nargout>1), tmp{i,1} = Y; end
                 [Y,~,tmp{i,2}] = this.layers{i}.apply(thetas{i},Y);
                 if this.outTimes(i)==1 
                     Ydata = [Ydata; this.Q*Y];
                 end
-                cnt = cnt + ni;
             end
         end
         function [thetaNorm] = getNormalizedWeights(this,theta,Y,nL,thetaNL)

@@ -49,17 +49,17 @@ classdef doubleSymLayer < abstractMeganetElement
             this.activation = activation;
             this.K = K;
             if not(exist('Bin','var')) || isempty(Bin)
-                Bin = zeros(nFeatOut(K),0);
+                Bin = zeros(prod(nFeatOut(K)),0);
             end
             if not(exist('Bout','var')) || isempty(Bout)
-                Bout = zeros(nFeatIn(K),0);
+                Bout = zeros(prod(nFeatIn(K)),0);
             end
-            if not(isempty(nLayer1)) && nFeatIn(nLayer1) ~= nFeatOut(this.K)
+            if not(isempty(nLayer1)) && any(nFeatIn(nLayer1) ~= nFeatOut(this.K))
                 error('input dimension of normalization layer must match output dimension of K')
             end
             this.nLayer1 = nLayer1;
             
-            if not(isempty(nLayer2)) && nFeatIn(nLayer2) ~= nFeatIn(this.K)
+            if not(isempty(nLayer2)) && any(nFeatIn(nLayer2) ~= nFeatIn(this.K))
                 error('input dimension of normalization layer must match output dimension of K')
             end
             this.nLayer2 = nLayer2;
@@ -89,32 +89,29 @@ classdef doubleSymLayer < abstractMeganetElement
         
         function [Z,QZ,tmp] = apply(this,theta,Y,varargin)
             QZ =[]; tmp =  cell(1,2);
-            nex        = numel(Y)/nFeatIn(this);
-            Y          = reshape(Y,[],nex);
-            storedAct  = (nargout>1);
             
-            [th1,th2,th3,th4,th5] = split(this,theta);
-            Kop    = getOp(this.K,th1);
+            th = theta.weights;
+            Kop    = getOp(this.K,th{1});
             Y     = Kop*Y;
             if this.storeInterm
                 tmp{1}    = Y;
             end
             if not(isempty(this.nLayer1))
-                Y = apply(this.nLayer1,th4,Y);
+                Y = apply(this.nLayer1,th{4},Y);
             end
-            if not(isempty(th2))
-                Y     = Y + this.Bin*th2;
+            if not(isempty(th{2}))
+                Y     = Y + this.Bin*th{2};
             end
-            Z      = this.activation(Y,'doDerivative',storedAct);
+            Z      = this.activation(Y);
             Z      = -(Kop'*Z);
             if not(isempty(this.nLayer2))
                 if this.storeInterm
                     tmp{2} = Z;
                 end
-                Z = apply(this.nLayer2,th5,Z);
+                Z = apply(this.nLayer2,th{5},Z);
             end
-            if not(isempty(th3))
-                Z      = Z + this.Bout*th3;
+            if not(isempty(th{3}))
+                Z      = Z + this.Bout*th{3};
             end
         end
 
@@ -186,16 +183,17 @@ classdef doubleSymLayer < abstractMeganetElement
         end
         
         function theta = initTheta(this)
-            theta = [vec(initTheta(this.K)); ...
-                     0.0*ones(size(this.Bin,2),1);...
-                     0.0*ones(size(this.Bout,2),1)];
+            theta = cell(5,1);
+            theta{1} = initTheta(this.K);
+            theta{2} = 0.0*ones(size(this.Bin,2),1);
+            theta{3} = 0.0*ones(size(this.Bout,2),1);
            if not(isempty(this.nLayer1))
-               theta = [theta; initTheta(this.nLayer1)];
+               theta{4} = initTheta(this.nLayer1);
            end
            if not(isempty(this.nLayer2))
-               theta = [theta; initTheta(this.nLayer2)];
+               theta{5} = initTheta(this.nLayer2);
            end
-          
+           theta = MeganetWeights(theta);
         end
         
         function dY = Jthetamv(this,dtheta,theta,Y,KY)
