@@ -72,11 +72,12 @@ classdef Meganet < abstractMeganetElement
         end
         
         function theta = initTheta(this)
-            theta = [];
+            theta = cell(numel(this.blocks),1);
+            
             for k=1:numel(this.blocks)
-                theta = [theta; vec(initTheta(this.blocks{k}))];
+                theta{k} = initTheta(this.blocks{k});
             end
-            theta = gpuVar(this.useGPU,this.precision,theta);
+            theta = MeganetWeights(theta);
         end
         
         function [net2,theta2] = prolongateWeights(this,theta)
@@ -94,14 +95,8 @@ classdef Meganet < abstractMeganetElement
         end
         
         function vars = split(this,var)
-            nb = numel(this.blocks);
-            vars = cell(nb,1);
-            cnt = 0;
-            for k=1:nb
-                nk = nTheta(this.blocks{k});
-                vars{k} = var(cnt+(1:nk));
-                cnt = cnt + nk;
-            end
+            vars = var.weights;
+            
         end
         
         function idx = getBlockIndices(this)

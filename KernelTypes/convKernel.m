@@ -170,8 +170,8 @@ classdef convKernel
         end
         
         function A = getOp(this,K)
-            n   = prod(nFeatIn(this));
-            m   = prod(nFeatOut(this));
+            n   = nFeatIn(this);
+            m   = nFeatOut(this);
             Af  = @(Y) this.Amv(K,Y);
             ATf = @(Y) this.ATmv(K,Y);
             A   = LinearOperator(m,n,Af,ATf);

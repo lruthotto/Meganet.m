@@ -61,7 +61,12 @@ classdef ResNN < abstractMeganetElement
         
         
         function theta = initTheta(this)
-            theta = repmat(vec(initTheta(this.layer)),this.nt,1);
+            theta = cell(this.nt,1);
+            th0   = initTheta(this.layer);
+            for k=1:this.nt
+                theta{k} = th0;
+            end
+            theta = MeganetWeights(theta);
         end
         
         function [net2,theta2] = prolongateWeights(this,theta)
@@ -78,17 +83,16 @@ classdef ResNN < abstractMeganetElement
         
         
         % ------- apply forward problems -----------
-        function [Ydata,Y,tmp] = apply(this,theta,Y0)
-            nex = numel(Y0)/nFeatIn(this);
-            Y   = reshape(Y0,[],nex);
+        function [Ydata,Y,tmp] = apply(this,theta,Y)
+
             if nargout>1;    tmp = cell(this.nt,2); end
             
-            theta = reshape(theta,[],this.nt);
+            theta = theta.weights;
             
             Ydata = [];
             for i=1:this.nt
                 if (nargout>1), tmp{i,1} = Y; end
-                [Z,~,tmp{i,2}] = apply(this.layer,theta(:,i),Y);
+                [Z,~,tmp{i,2}] = apply(this.layer,theta{i},Y);
                 Y =  Y + this.h * Z;
                 if this.outTimes(i)==1
                     Ydata = [Ydata;this.Q*Y];

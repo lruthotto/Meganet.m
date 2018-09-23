@@ -50,14 +50,11 @@ classdef convMCN < convKernel
         end
         
         function [Y,tmp] = Amv(this,theta,Y)
-            tmp   = []; % no need to store any intermediates
-            nex   = numel(Y)/prod(nImgIn(this));
-            
+            tmp = [];
             % compute convolution
-            Y   = reshape(Y,[nImgIn(this) nex]);
-            K   = reshape(this.Q*theta(:),this.sK);
+%             K   = reshape(this.Q*theta(:),this.sK);
+            K   = theta;
             Y   = vl_nnconv(Y,K,[],'pad',this.pad,'stride',this.stride);
-            Y   = reshape(Y,[],nex);
         end
 
         

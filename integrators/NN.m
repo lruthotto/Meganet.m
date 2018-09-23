@@ -90,22 +90,25 @@ classdef NN < abstractMeganetElement
         end
         
         function theta = initTheta(this)
-            theta = [];
+            theta = cell(numel(this.layers),1);
             for k=1:numel(this.layers)
-                theta = [theta; vec(initTheta(this.layers{k}))];
+                theta{k} = initTheta(this.layers{k});
             end
+            theta = MeganetWeights(theta);
         end
         
         
         function vars = split(this,var)
-            nb = numel(this.layers);
-            vars = cell(nb,1);
-            cnt = 0;
-            for k=1:nb
-                nk = nTheta(this.layers{k});
-                vars{k} = var(cnt+(1:nk));
-                cnt = cnt + nk;
-            end
+            vars = var.weights;
+%             
+%             nb = numel(this.layers);
+%             vars = cell(nb,1);
+%             cnt = 0;
+%             for k=1:nb
+%                 nk = nTheta(this.layers{k});
+%                 vars{k} = var(cnt+(1:nk));
+%                 cnt = cnt + nk;
+%             end
         end
         
         % --------- forward problem ----------
@@ -115,11 +118,12 @@ classdef NN < abstractMeganetElement
             
             if nargout>1;    tmp = cell(nt,2); end
             Ydata = [];
+            thetas = split(this,theta);
             cnt = 0;
             for i=1:nt
                 ni = nTheta(this.layers{i});
                 if (nargout>1), tmp{i,1} = Y; end
-                [Y,~,tmp{i,2}] = this.layers{i}.apply(theta(cnt+(1:ni)),Y);
+                [Y,~,tmp{i,2}] = this.layers{i}.apply(thetas{i},Y);
                 if this.outTimes(i)==1 
                     Ydata = [Ydata; this.Q*Y];
                 end

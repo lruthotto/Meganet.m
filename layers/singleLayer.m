@@ -53,37 +53,42 @@ classdef singleLayer < abstractMeganetElement
             
         end
         function [th1,th2,th3,th4] = split(this,theta)
-            th1 = theta(1:nTheta(this.K));
-            cnt = numel(th1);
-            th2 = theta(cnt+(1:size(this.Bin,2)));
-            cnt = cnt + numel(th2);
-            th3 = theta(cnt+(1:size(this.Bout,2)));
-            cnt = cnt + numel(th3);
-            th4 = theta(cnt+1:end);
+              th1 = theta.weights{1};
+              th2 = theta.weights{2};
+              th3 = theta.weights{3};
+              th4 = theta.weights{4};
+%             
+%             th1 = theta(1:nTheta(this.K));
+%             cnt = numel(th1);
+%             th2 = theta(cnt+(1:size(this.Bin,2)));
+%             cnt = cnt + numel(th2);
+%             th3 = theta(cnt+(1:size(this.Bout,2)));
+%             cnt = cnt + numel(th3);
+%             th4 = theta(cnt+1:end);
         end
         
         function [Ydata,Y,KY] = apply(this,theta,Y,varargin)
-            doDerivative  = (nargout>1); KY = [];
+             KY = [];
             for k=1:2:length(varargin)     % overwrites default parameter
                 eval([varargin{k},'=varargin{',int2str(k+1),'};']);
             end
             [th1,th2,th3,th4] = split(this,theta);
             
-            Y      =  getOp(this.K,th1)*Y;
-            if this.storeInterm
-                KY    = Y;
-            end
-            if not(isempty(this.nLayer))
-                Y = apply(this.nLayer,th4,Y);
-            end
-            
-            if not(isempty(th2))
-                Y = Y + this.Bin * th2;
-            end
-            Y = this.activation(Y,'doDerivative',doDerivative);
-            if not(isempty(th3))
-                Y = Y +this.Bout*th3;
-            end
+             Y      =  getOp(this.K,th1)*Y;
+              if this.storeInterm
+                  KY    = Y;
+              end
+              if not(isempty(this.nLayer))
+                  Y = apply(this.nLayer,th4,Y);
+              end
+%             
+             if not(isempty(th2))
+                 Y = Y + this.Bin * th2;
+             end
+            Y = this.activation(Y);
+             if not(isempty(th3))
+                 Y = Y +this.Bout*th3;
+             end
             Ydata = Y;
         end
         
@@ -107,10 +112,13 @@ classdef singleLayer < abstractMeganetElement
         end
         
         function theta = initTheta(this)
-           theta = [vec(initTheta(this.K)); 0.0*ones(size(this.Bin,2),1) ; 0.0*ones(size(this.Bout,2),1) ];
+           theta = {initTheta(this.K), 0.0*ones(size(this.Bin,2),1), 0.0*ones(size(this.Bout,2),1) };
            if not(isempty(this.nLayer))
-               theta = [theta; initTheta(this.nLayer)];
+               theta{4} = initTheta(this.nLayer);
+           else
+               theta{4} = [];
            end
+           theta = MeganetWeights(theta);
         end
         
         function [dA,KY,tmpNL] = getTempsForSens(this,theta,Y,KY)
