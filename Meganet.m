@@ -119,8 +119,6 @@ classdef Meganet < abstractMeganetElement
         
         % ---------- apply forward problem ------------
         function [Ydata,Y,tmp] = apply(this,theta,Y0)
-            nex = numel(Y0)/nFeatIn(this);
-            Y0  = reshape(Y0,[],nex);
             nb = numel(this.blocks);
             Y  = Y0;
             tmp = cell(nb,1);
@@ -213,14 +211,14 @@ classdef Meganet < abstractMeganetElement
                doDerivative =[1;0]; 
             end
             
-            nex = numel(Y)/nFeatIn(this);
+             nex = size(Y,ndims(Y));
             if isempty(W)
                 W=0;
             else
-                W  = reshape(W,[],nex);
+%                 W  = reshape(W,[],nex);
             end
             if not(isempty(Wdata))
-                Wdata = reshape(Wdata,[],nex);
+%                 Wdata = reshape(Wdata,[],nex);
             end
             
             nb  = numel(this.blocks);
@@ -233,7 +231,8 @@ classdef Meganet < abstractMeganetElement
                 %                 W  = Wdata(end-cntW-no+1:end-cntW,:);
                 if any(this.blocks{k}.outTimes)
                     ndk = nDataOut(this.blocks{k});
-                    Wd  = Wdata(end-cntWd-ndk+1:end-cntWd,:);
+%                     Wd  = Wdata(end-cntWd-ndk+1:end-cntWd,:);
+                    Wd  = reshape(Wdata,[nFeatOut(this.blocks{k}) nex]);
                 else
                     Wd = [];
                 end

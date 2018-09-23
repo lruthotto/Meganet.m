@@ -205,14 +205,14 @@ classdef NN < abstractMeganetElement
                doDerivative =[1;0]; 
             end
             
-            nex = numel(Y)/nFeatIn(this);
+%             nex = numel(Y)/nFeatIn(this);
             if ~isempty(Wdata)
-                Wdata = reshape(Wdata,[],nex);
+%                 Wdata = reshape(Wdata,[],nex);
             end
             if isempty(W)
                 W = 0;
             elseif numel(W)>1
-                W     = reshape(W,[],nex);
+%                 W     = reshape(W,[],nex);
             end
             
             dtheta = 0*theta;

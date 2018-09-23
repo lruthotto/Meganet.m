@@ -57,8 +57,6 @@ classdef connector < abstractMeganetElement
         
         % -------- apply forward problem -------
         function [Ydata,Y,tmp] = apply(this,~,Y0)
-            nex = numel(Y0)/nFeatIn(this);
-            Y0  = reshape(Y0,[],nex);
             Y = this.K*Y0 + this.b;
             if this.outTimes==1
                 Ydata = this.Q*Y;
@@ -82,14 +80,14 @@ classdef connector < abstractMeganetElement
         end
             
         function [dtheta,W] = JTmv(this,Wdata,W,~,Y,~,doDerivative)
-            nex = numel(Y)/nFeatIn(this);
+%             nex = numel(Y)/nFeatIn(this);
             if isempty(W)
                 W = 0;
             elseif not(isscalar(W))
-                W     = reshape(W,[],nex);
+%                 W     = reshape(W,[],nex);
             end
             if ~isempty(Wdata)
-                Wdata = reshape(Wdata,[],nex);
+%                 Wdata = reshape(Wdata,[],nex);
                 W     = W+ this.Q'*Wdata;
             end
             

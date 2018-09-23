@@ -8,7 +8,10 @@
 clear all; clc;
 
 
-[Y0,C,Ytest,Ctest] = setupMNIST(2^10);
+[Y0,C,Ytest,Ctest] = setupMNIST(2^9);
+Y0 = reshape(Y0,28,28,1,[]);
+Ytest = reshape(Ytest,28,28,1,[]);
+
 nImg = [28 28];
 
 % choose file for results and specify whether or not to retrain
@@ -34,6 +37,8 @@ blocks{end+1} = connector(poolOp([nImg 32],2));
 blocks{end+1} = NN({singleLayer(convOp(nImg/2,[5 5 32 64]),'activation', act)});
 
 blocks{end+1} = connector(poolOp([nImg/2 64],2));
+
+blocks{end+1} = NN({reshapeLayer(nFeatOut(blocks{end}), prod(nFeatOut(blocks{end})))});
 net    = Meganet(blocks);
 
 % setup loss function for training and validation set
@@ -55,11 +60,13 @@ opt = sgd();
 opt.learningRate = @(epoch) 1e-3/sqrt(epoch);
 opt.maxEpochs = 20;
 opt.nesterov = false;
-opt.ADAM=true;
-opt.miniBatch = 128;
+ opt.ADAM=true;
+ opt.miniBatch = 128;
 opt.momentum = 0.9;
 opt.out = 1;
 
+
+% opt = sd('out',1);
 % run optimization
 tic;
 [xOpt,His] = solve(opt,fctn,[theta(:); W(:)],fval);

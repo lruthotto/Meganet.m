@@ -95,8 +95,18 @@ classdef dnnBatchObjFctn < objFctn
                 C = this.C;
             else
                 % use all examples
-                Y = this.Y(:,idx);
-                C = this.C(:,idx);
+                switch ndims(this.Y)
+                        case 2
+                            Y  = this.Y(:,idx);
+                            C  = this.C(:,idx);
+                        case 3
+                            Y  = this.Y(:,:,idx);
+                            C  = this.C(:,idx);
+                        case 4
+                            Y  = this.Y(:,:,:,idx);
+                            C  = this.C(:,idx);
+                end
+                    
             end
                 
             compGrad = nargout>2;
@@ -115,8 +125,17 @@ classdef dnnBatchObjFctn < objFctn
             for k=nb:-1:1
                 idk = this.getBatchIds(k,nex);
                 if nb>1
-                    Yk  = Y(:,idk);
-                    Ck  = C(:,idk);
+                    switch ndims(Y)
+                        case 2
+                            Yk  = Y(:,idk);
+                            Ck  = C(:,idk);
+                        case 3
+                            Yk  = Y(:,:,idk);
+                            Ck  = C(:,:,idk);
+                        case 4
+                            Yk  = Y(:,:,:,idk);
+                            Ck  = C(:,:,:,idk);
+                    end
                 else
                     Yk = Y;
                     Ck = C;

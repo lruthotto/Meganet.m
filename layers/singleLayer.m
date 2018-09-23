@@ -38,12 +38,12 @@ classdef singleLayer < abstractMeganetElement
                 K.precision=precision;
             end
             if isempty(Bin)
-                Bin = zeros(nFeatOut(K),0);
+                Bin = zeros(prod(nFeatOut(K)),0);
             end
             this.Bin = gpuVar(K.useGPU, K.precision, Bin);
                 
             if isempty(Bout)
-                Bout = zeros(nFeatOut(K),0);
+                Bout = zeros(prod(nFeatOut(K)),0);
             end
             this.Bout = gpuVar(K.useGPU, K.precision, Bout);
             this.nLayer = nLayer;
@@ -67,9 +67,6 @@ classdef singleLayer < abstractMeganetElement
             for k=1:2:length(varargin)     % overwrites default parameter
                 eval([varargin{k},'=varargin{',int2str(k+1),'};']);
             end
-            
-            nex = numel(Y)/nFeatIn(this);
-            Y   = reshape(Y,[],nex);
             [th1,th2,th3,th4] = split(this,theta);
             
             Y      =  getOp(this.K,th1)*Y;
@@ -129,12 +126,12 @@ classdef singleLayer < abstractMeganetElement
             %   KY    - K(theta)*Y
             %   tmpNL - temp results of norm Layer
             
-            nex = numel(Y)/nFeatIn(this);
+%             nex = numel(Y)/nFeatIn(this);
             tmpNL =[];
             [th1, th2,~,th4]  = split(this,theta);
             
             if not(this.storeInterm)
-                Y = reshape(Y,[],nex);
+%                 Y = reshape(Y,[],nex);
                 KY = getOp(this.K,th1)*Y;
             end
             if not(isempty(this.nLayer))
@@ -211,20 +208,26 @@ classdef singleLayer < abstractMeganetElement
             [dA,KY,tmpNL] = getTempsForSens(this,theta,Y,KY);
 
             
-            nex       = numel(Y)/nFeatIn(this);
             dY = [];
             if isscalar(Z) && Z==0
                 dtheta = 0*theta; 
                 dY     = 0*Y;
                 return
             end
-            Z         = reshape(Z,[],nex);
             Kop = getOp(this.K,th1);
             
-            dth3      = vec(sum(this.Bout'*Z,2));
+            if not(isempty(this.Bout))
+                dth3      = vec(sum(this.Bout'*Z,2));
+            else
+                dth3 = [];
+            end
             dAZ       = dA.*Z;
             
-            dth2   = vec(sum(this.Bin'*reshape(dAZ,[],nex),2));
+            if not(isempty(this.Bin))
+                dth2   = vec(sum(this.Bin'*reshape(dAZ,[],nex),2));
+            else
+                dth2 = [];
+            end
             if not(isempty(this.nLayer))
                [dth4,dAZ] = JTmv(this.nLayer,dAZ,[],th4,KY,tmpNL); 
             else
